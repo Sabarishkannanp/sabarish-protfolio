@@ -34,7 +34,7 @@ export default function CursorPreloader({
       badge,
       onDone: () => {
         setReplay(canAnimate());
-        try { sessionStorage.setItem("cpSeen", "1"); } catch {}
+        if (oncePerSession) { try { sessionStorage.setItem("cpSeen", "1"); } catch {} }
       },
     });
   };

@@ -57,7 +57,6 @@ export default function Navbar() {
     setMenuOpen(false);
     // wait for the menu to unlock scrolling before moving
     window.setTimeout(() => scrollToId(id), menuOpen ? 60 : 0);
-    history.replaceState(null, "", `#${id}`);
   };
 
   return (

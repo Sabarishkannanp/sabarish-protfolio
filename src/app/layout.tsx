@@ -67,7 +67,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c") }}
         />
         {children}
-        <CursorPreloader badge="SK" accent="#3B82F6" names={["Sabarish", "Claude", "Design"]} />
+        {/* Live site: intro once per browser tab. Local `npm run dev`: every refresh. */}
+        <CursorPreloader
+          badge="SK"
+          accent="#3B82F6"
+          names={["Sabarish", "Claude", "Design"]}
+          oncePerSession={process.env.NODE_ENV === "production"}
+        />
       </body>
     </html>
   );
