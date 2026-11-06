@@ -92,7 +92,7 @@ export default function CursorPreloader({
 
 /** Put inside <head> in app/layout.tsx. Starts the page dark so there is no flash before the intro. */
 export function PreloaderHeadScript() {
-  const js = `try{var m=matchMedia('(prefers-reduced-motion: reduce)').matches,h=location.hash,ok=['','#top','#hero','#home'].indexOf(h)>-1,s=sessionStorage.getItem('cpSeen')==='1';if(!m&&innerWidth>=768&&ok&&!s){document.documentElement.classList.add('cp-pre');setTimeout(function(){document.documentElement.classList.remove('cp-pre')},6000)}}catch(e){}`;
+  const js = `try{var m=matchMedia('(prefers-reduced-motion: reduce)').matches,h=location.hash,ok=['','#top','#hero','#home'].indexOf(h)>-1,s=sessionStorage.getItem('cpSeen')==='1';if(!m&&ok&&!s){document.documentElement.classList.add('cp-pre');setTimeout(function(){document.documentElement.classList.remove('cp-pre')},6000)}}catch(e){}`;
   const css = `html.cp-pre body::after{content:"";position:fixed;inset:0;z-index:9989;background:#050505}html.cp-pre{overflow:hidden}`;
   return (
     <>

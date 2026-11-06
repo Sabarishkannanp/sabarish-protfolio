@@ -26,7 +26,7 @@ export interface PreloaderOptions {
 }
 
 const CSS = `
-.cp-layer{position:absolute;left:0;top:0;width:100%;pointer-events:none;z-index:9990}
+.cp-layer{position:absolute;left:0;top:0;width:100%;overflow:hidden;pointer-events:none;z-index:9990}
 .cp-cover{position:fixed;inset:0;z-index:9989;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,rgba(229,9,20,.10),transparent 60%),#050505;transition:opacity .6s}
 .cp-wash{position:fixed;inset:0;z-index:9988;pointer-events:none;background:rgba(128,132,140,.55);opacity:0;transition:opacity .45s}
 .cp-cur{position:absolute;left:0;top:0;will-change:transform}
@@ -58,6 +58,7 @@ const CSS = `
 .cp-ripple{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:1.5px solid var(--cp-accent);pointer-events:none}
 .cp-sweep{position:fixed;left:0;right:0;top:0;height:2px;z-index:9991;pointer-events:none;background:linear-gradient(90deg,transparent,#ff1e3c 20%,#fff 50%,#ff1e3c 80%,transparent);box-shadow:0 0 24px 6px rgba(229,9,20,.55)}
 .cp-live{color:#4ade80}
+@media (max-width:767px){.cp-bar{gap:10px;max-width:calc(100vw - 24px);bottom:14px}.cp-av,.cp-ico,.cp-count,.cp-bar .cp-sep{display:none}.cp-status{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}.cp-prog{width:64px}}
 `;
 
 const arrow = (c: string) => `<svg viewBox="0 0 18 18"><path d="M1.5 1.5l5.2 14 2.1-5.9 5.9-2.1z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
@@ -85,7 +86,6 @@ function ensureStyle(accent: string) {
 export function canAnimate() {
   if (typeof window === "undefined") return false;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
-  if (innerWidth < 768) return false;
   if (location.hash && !["#top", "#hero", "#home"].includes(location.hash)) return false;
   return true;
 }
@@ -269,7 +269,8 @@ function newLayer() {
 /** Flocks of 3 cursors spiral inward around (cx, cy), like agents circling the page. */
 function orbit(agents: Agent[], cx: number, cy: number, ms: number, s: AbortSignal, onT?: (t: number) => void) {
   const flocks = Math.ceil(agents.length / 3);
-  const f = Array.from({ length: flocks }, (_, i) => ({ a0: (i / flocks) * Math.PI * 2 + rand(-0.3, 0.3), r0: rand(240, 380), r1: rand(55, 95), spin: rand(1.6, 2.3) * Math.PI }));
+  const k = Math.max(0.5, Math.min(1, innerWidth / 1000)); // smaller ring on phones
+  const f = Array.from({ length: flocks }, (_, i) => ({ a0: (i / flocks) * Math.PI * 2 + rand(-0.3, 0.3), r0: rand(240, 380) * k, r1: rand(55, 95) * k, spin: rand(1.6, 2.3) * Math.PI }));
   const offs = [[0, 0], [15, 5], [5, 15]];
   return new Promise<void>((res, rej) => {
     const t0 = performance.now();
@@ -299,7 +300,7 @@ export function runPreloader(opts: PreloaderOptions = {}): () => void {
 
   const ac = new AbortController(), s = ac.signal;
   const names = opts.names ?? NAMES;
-  const nAgents = opts.agents ?? 18;
+  const nAgents = Math.min(opts.agents ?? 18, innerWidth < 768 ? 10 : 99); // fewer cursors on phones
   scrollTo(0, 0);
   const prevOverflow = document.documentElement.style.overflow;
   document.documentElement.style.overflow = "hidden";
