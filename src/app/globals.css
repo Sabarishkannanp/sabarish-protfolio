@@ -70,12 +70,6 @@ html.lenis body {
   overscroll-behavior: contain;
 }
 
-/* Custom cursor hides the native one (only added on fine pointers) */
-html.has-cursor,
-html.has-cursor * {
-  cursor: none !important;
-}
-
 /* Section anchors clear the fixed navbar */
 section[id] {
   scroll-margin-top: 4rem;
@@ -180,13 +174,5 @@ section[id] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* Build-intro: elements start hidden wherever the cursor intro runs
-   (all screen sizes, motion allowed). build-intro.ts reveals them. */
-@media (prefers-reduced-motion: no-preference) {
-  [data-build] {
-    opacity: 0;
   }
 }

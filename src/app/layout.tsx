@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Anton, Caveat, Inter } from "next/font/google";
+import CursorPreloader, { PreloaderHeadScript } from "@/components/CursorPreloader";
 import { site } from "@/data/site";
 import "./globals.css";
 
@@ -54,13 +55,19 @@ const personJsonLd = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${anton.variable} ${inter.variable} ${caveat.variable}`}>
+    // The head script adds a "cp-pre" class to <html> before React loads, so React
+    // must not warn about that attribute differing from the server HTML.
+    <html lang="en" className={`${anton.variable} ${inter.variable} ${caveat.variable}`} suppressHydrationWarning>
+      <head>
+        <PreloaderHeadScript />
+      </head>
       <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c") }}
         />
         {children}
+        <CursorPreloader badge="SK" accent="#3B82F6" names={["Sabarish", "Claude", "Design"]} />
       </body>
     </html>
   );

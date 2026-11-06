@@ -63,6 +63,7 @@ export default function Navbar() {
   return (
     <>
       <motion.div
+        data-build-skip
         aria-hidden="true"
         className="fixed inset-x-0 top-0 z-[70] h-[2px] origin-left bg-red-hot"
         style={{ scaleX: progress }}
@@ -140,6 +141,7 @@ export default function Navbar() {
         {menuOpen && (
           <motion.div
             id="mobile-menu"
+            data-build-skip
             className="fixed inset-0 z-[55] flex flex-col bg-ink px-5 pb-10 pt-24 md:hidden"
             initial={{ clipPath: "inset(0 0 100% 0)" }}
             animate={{ clipPath: "inset(0 0 0% 0)" }}

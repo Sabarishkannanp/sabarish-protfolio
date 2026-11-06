@@ -1,9 +1,13 @@
 "use client";
 
-import { animate, motion, useInView } from "framer-motion";
+import { animate, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-/** Counts 0 → `to` once in view. Inside a [data-build] element it waits until the build intro reveals it. */
+/**
+ * Shows the real number in the server HTML (good for SEO / no-JS), then on the
+ * client counts 0 → `to` once the number is actually visible on screen — i.e.
+ * in view and not hidden by the cursor preloader (html.cp-pre / visibility:hidden).
+ */
 export default function CountUp({
   to,
   suffix = "",
@@ -16,42 +20,56 @@ export default function CountUp({
   duration?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(to);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!inView || !ref.current) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let controls: ReturnType<typeof animate> | undefined;
-    const run = () => {
-      controls = animate(0, to, {
-        duration: reduced ? 0 : duration,
-        delay: reduced ? 0 : delay,
-        ease: [0.16, 1, 0.3, 1], // fast start, slow finish on the last numbers
-        onUpdate: (v) => setValue(Math.round(v)),
-        onComplete: () => setDone(true),
-      });
-    };
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const host = ref.current.closest<HTMLElement>("[data-build]");
-    const visible = () => !host || getComputedStyle(host).opacity !== "0";
-    if (visible()) {
-      run();
-      return () => controls?.stop();
-    }
-    const mo = new MutationObserver(() => {
-      if (visible()) {
-        mo.disconnect();
-        run();
-      }
+    let controls: ReturnType<typeof animate> | undefined;
+    let started = false;
+    let raf = 0;
+    let inView = false;
+
+    const io = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
     });
-    mo.observe(host!, { attributes: true, attributeFilter: ["style"] });
+    io.observe(el);
+
+    const shown = () =>
+      inView &&
+      !document.documentElement.classList.contains("cp-pre") &&
+      getComputedStyle(el).visibility === "visible" &&
+      !el.closest("[data-cp-hidden]");
+
+    // Check each frame until the number is really on screen, then count from 0.
+    const check = () => {
+      if (started) return;
+      if (shown()) {
+        started = true;
+        io.disconnect();
+        setValue(0);
+        controls = animate(0, to, {
+          duration,
+          delay,
+          ease: [0.16, 1, 0.3, 1], // fast start, slow finish on the last numbers
+          onUpdate: (v) => setValue(Math.round(v)),
+          onComplete: () => setDone(true),
+        });
+        return;
+      }
+      raf = requestAnimationFrame(check);
+    };
+    raf = requestAnimationFrame(check);
+
     return () => {
-      mo.disconnect();
+      cancelAnimationFrame(raf);
+      io.disconnect();
       controls?.stop();
     };
-  }, [inView, to, delay, duration]);
+  }, [to, delay, duration]);
 
   return (
     <motion.span
@@ -59,7 +77,10 @@ export default function CountUp({
       className="inline-block origin-bottom tabular-nums"
       animate={
         done
-          ? { scale: [1, 1.18, 1], textShadow: ["0 0 0px rgba(229,9,20,0)", "0 0 28px rgba(229,9,20,0.9)", "0 0 12px rgba(229,9,20,0.35)"] }
+          ? {
+              scale: [1, 1.18, 1],
+              textShadow: ["0 0 0px rgba(229,9,20,0)", "0 0 28px rgba(229,9,20,0.9)", "0 0 12px rgba(229,9,20,0.35)"],
+            }
           : undefined
       }
       transition={{ duration: 0.6, ease: "easeOut" }}

@@ -9,8 +9,8 @@ export const site = {
   description:
     "Sabarish Kannan P — MERN full stack developer from Coimbatore, India. I build fast, responsive websites and web apps for real businesses.",
 
-  // TODO: your live domain after deploying (used for SEO / Open Graph)
-  url: "https://your-domain.vercel.app",
+  // Live domain (used by metadataBase for canonical URL + Open Graph image)
+  url: "https://sabarish-protfolio.vercel.app",
 
   // TODO: contact details
   email: "sabarishkannanp2004@gmail.com",

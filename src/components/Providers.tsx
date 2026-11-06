@@ -2,9 +2,8 @@
 
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-import { createContext, useCallback, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import ContactModal, { type ContactView } from "./ContactModal";
-import Cursor from "./Cursor";
 import SmoothScroll from "./SmoothScroll";
 
 type UI = {
@@ -35,14 +34,19 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     timer.current = window.setTimeout(() => setToastMsg(null), 2800);
   }, []);
 
+  // Tell the cursor preloader the whole page has hydrated, so it never hides
+  // elements React is still attaching to (that caused hydration warnings).
+  useEffect(() => {
+    document.documentElement.dataset.appReady = "1";
+  }, []);
+
   return (
     <MotionConfig reducedMotion="user">
       <UIContext.Provider value={{ openContact, toast }}>
         <SmoothScroll />
-        <Cursor />
         {children}
         <ContactModal open={contact.open} view={contact.view} onView={setView} onClose={closeContact} />
-        <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-[95] flex justify-center px-4">
+        <div data-build-skip aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-[95] flex justify-center px-4">
           <AnimatePresence>
             {toastMsg && (
               <motion.div
